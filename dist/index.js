@@ -69,7 +69,7 @@ async function getMarkdownReleaseNotes(baseUrl, project, version, token, release
     return title + note;
 }
 function getTitle(response, version, releaseNotesUrl) {
-    return `# [Jira](${releaseNotesUrl})`;
+    return `## [Jira](${releaseNotesUrl})`;
 }
 function getNote(response, baseUrl) {
     const groupedIssues = getGroupedIssues(response.issues, baseUrl);

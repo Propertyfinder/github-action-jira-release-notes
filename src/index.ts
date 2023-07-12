@@ -46,7 +46,7 @@ async function getMarkdownReleaseNotes(baseUrl: string, project: string, version
 }
 
 function getTitle(response: any, version: string, releaseNotesUrl: string): string {
-    return `# [Jira](${releaseNotesUrl})`
+    return `## [Jira](${releaseNotesUrl})`
 }
 
 function getNote(response: any, baseUrl: string): string {
