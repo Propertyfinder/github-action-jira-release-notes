@@ -90,7 +90,7 @@ function getGroupedIssues(rawValue, baseUrl) {
         const key = value.key;
         const url = baseUrl + "browse/" + key;
         const fields = value.fields;
-        const summary = fields.summary;
+        const summary = fields.summary.replace(/"/g, "`");
         const type = fields.issuetype.name;
         return new Issue(key, summary, type, url);
     }).sort((a, b) => {
