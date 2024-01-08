@@ -72,7 +72,7 @@ function getGroupedIssues(rawValue: any, baseUrl: string): GroupedIssue[] {
         const url = baseUrl + "browse/" + key
 
         const fields = value.fields
-        const summary = (fields.summary as string).replace(/"/g, "`")
+        const summary = (fields.summary as string).replace(/"/g, "`").replace(/'/g, "`")
         const type = fields.issuetype.name
 
         return new Issue(key, summary, type, url)
