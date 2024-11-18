@@ -12,7 +12,7 @@ import * as _ from 'lodash'
     const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`
 
     try {
-        const releaseData = await getReleaseData(projects, version, token)
+        const releaseData = await getReleaseData(baseUrl, projects, version, token)
         console.log(`releaseData = ${releaseData}`)
         core.setOutput("releaseData", releaseData);
     } catch (error: any) {
@@ -21,16 +21,16 @@ import * as _ from 'lodash'
 
 })();
 
-async function getReleaseData(projects: string, version: string, token: string): Promise<string> {
+async function getReleaseData(baseUrl: string,projects: string, version: string, token: string): Promise<string> {
     var options = {
             method: 'POST',
             uri: baseUrl,
             headers: {
                 Authorization: `Basic ${token}`
-                }
+                },
             body: {
-                  fields: 'id,key,summary,components,summary,assignee,project'
-                  jql: `project IN (\"${projects}\" AND component = \"${version}\ ORDER BY created DESC`
+                  fields: 'id,key,summary,components,summary,assignee,project',
+                  jql: `project IN (\"${projects}\" AND component = \"${version}\ ORDER BY created DESC`,
                   maxResults: 100
                 },
             json: true
