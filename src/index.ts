@@ -5,25 +5,45 @@ import * as _ from 'lodash'
 
 (async () => {
     const domain = core.getInput("domain")
-    const project = core.getInput("project")
+    const projects = core.getInput("projects")
     const version = core.getInput("version")
     const token = core.getInput("auth-token")
 
-    const baseUrl = `https://${domain}.atlassian.net/`
+    const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`
 
     try {
-        const releaseNotesUrl = await getReleaseNotesUrl(baseUrl, domain, project, version, token)
-        console.log(`release_notes_url = ${releaseNotesUrl}`)
-        core.setOutput("release_notes_url", releaseNotesUrl);
-
-        const markdownReleaseNote = await getMarkdownReleaseNotes(baseUrl, project, version, token, releaseNotesUrl)
-        console.log(`release_notes = ${markdownReleaseNote}`)
-        core.setOutput("release_notes", markdownReleaseNote);
+        const releaseData = await getReleaseData(project, version, token)
+        console.log(`releaseData = ${releaseData}`)
+        core.setOutput("releaseData", releaseData);
     } catch (error: any) {
         core.setFailed(error.message);
     }
 
 })();
+
+async function getReleaseData(project: string, version: string, token: string): Promise<string> {
+    var options = {
+            method: 'POST',
+            uri: baseUrl,
+            headers: {
+                Authorization: `Basic ${token}`
+                }
+            body: {
+                  fields: 'id,key,summary,components,summary,assignee,project'
+                  jql: 'project IN (CX, NA, GROW, NP) AND component = Squad: Search Experience ORDER BY created DESC'
+                  maxResults: 100
+                },
+            json: true
+        }
+
+    return await request(options)
+        .then(function (body) {
+            console.log(body)
+        })
+        .catch(function (err) {
+            console.log(err)
+        })
+}
 
 async function getMarkdownReleaseNotes(baseUrl: string, project: string, version: string, token: string, releaseNotesUrl: string): Promise<string> {
     const url = baseUrl + "rest/api/3/search"
