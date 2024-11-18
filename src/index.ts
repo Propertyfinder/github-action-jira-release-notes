@@ -16,12 +16,15 @@ import * as _ from 'lodash'
         console.log(`releaseData = ${releaseData}`)
         core.setOutput("releaseData", releaseData);
     } catch (error: any) {
+        console.log(`I failed = ${releaseData}`)
         core.setFailed(error.message);
     }
 
 })();
 
 async function getReleaseData(baseUrl: string, projects: string, version: string, token: string): Promise<string> {
+    console.log("Start Of the getReleaseData method")
+
     var options = {
             method: 'POST',
             uri: baseUrl,
@@ -36,7 +39,10 @@ async function getReleaseData(baseUrl: string, projects: string, version: string
             json: true
         };
 
-    return await request(options)
+    console.log(`options = ${options}`)
+    val response =  await request(options)
+    console.log(`response = ${response}`)
+    return request
 }
 
 async function getMarkdownReleaseNotes(baseUrl: string, project: string, version: string, token: string, releaseNotesUrl: string): Promise<string> {
