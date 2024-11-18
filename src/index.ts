@@ -13,17 +13,17 @@ import * as _ from 'lodash'
 
     try {
         const releaseData = await getReleaseData(baseUrl, projects, version, token)
-        console.log(`releaseData = ${releaseData}`)
+        console.setOutput(`releaseData = ${releaseData}`)
         core.setOutput("releaseData", releaseData);
     } catch (error: any) {
-        console.log(`I failed = ${releaseData}`)
+        console.setOutput(`I failed = ${releaseData}`)
         core.setFailed(error.message);
     }
 
 })();
 
 async function getReleaseData(baseUrl: string, projects: string, version: string, token: string): Promise<string> {
-    console.log("Start Of the getReleaseData method")
+    console.setOutput("Start Of the getReleaseData method")
 
     var options = {
             method: 'POST',
@@ -39,9 +39,9 @@ async function getReleaseData(baseUrl: string, projects: string, version: string
             json: true
         };
 
-    console.log(`options = ${options}`)
+    console.setOutput(`options = ${options}`)
     val response =  await request(options)
-    console.log(`response = ${response}`)
+    console.setOutput(`response = ${response}`)
     return request
 }
 
