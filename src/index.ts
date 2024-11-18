@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 
-import * as request from "request-promise";
+import request from "request-promise";
 import * as _ from 'lodash'
 
 (async () => {
@@ -37,12 +37,6 @@ async function getReleaseData(baseUrl: string,projects: string, version: string,
         };
 
     return await request(options)
-        .then(function (body) {
-            console.log(body)
-        })
-        .catch(function (err) {
-            console.log(err)
-        });
 }
 
 async function getMarkdownReleaseNotes(baseUrl: string, project: string, version: string, token: string, releaseNotesUrl: string): Promise<string> {
