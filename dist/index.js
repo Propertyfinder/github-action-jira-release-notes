@@ -59,8 +59,8 @@ async function getReleaseData(baseUrl, projects, version, token) {
             Authorization: `Basic ${token}`
         },
         body: {
-            fields: 'id,key,summary,components,summary,assignee,project',
-            jql: `project IN (\"${projects}\" AND component = \"${version}\ ORDER BY created DESC`,
+            fields: 'id,key,summary,components,assignee,project',
+            jql: `project IN (\"${projects}\" AND component = \"${version}\" ORDER BY created DESC`,
             maxResults: 100
         },
         json: true
@@ -118,24 +118,6 @@ function getGroupedIssues(rawValue, baseUrl) {
     return _.map(groupedResult, (items, key) => {
         return new GroupedIssue(key, items);
     });
-}
-async function getReleaseNotesUrl(baseUrl, domain, project, version, token) {
-    var _a;
-    const url = `${baseUrl}rest/api/3/project/${project}/version`;
-    const response = await request_promise_1.default.get(url, {
-        headers: {
-            Authorization: `Basic ${token}`
-        },
-        qs: {
-            query: version,
-        },
-        json: true,
-    });
-    const versionId = (_a = response.values[0]) === null || _a === void 0 ? void 0 : _a.id;
-    if (versionId == undefined) {
-        return "";
-    }
-    return `https://${domain}.atlassian.net/projects/${project}/versions/${versionId}`;
 }
 class Issue {
     constructor(key, summary, type, url) {

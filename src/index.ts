@@ -21,7 +21,7 @@ import * as _ from 'lodash'
 
 })();
 
-async function getReleaseData(baseUrl: string,projects: string, version: string, token: string): Promise<string> {
+async function getReleaseData(baseUrl: string, projects: string, version: string, token: string): Promise<string> {
     var options = {
             method: 'POST',
             uri: baseUrl,
@@ -29,8 +29,8 @@ async function getReleaseData(baseUrl: string,projects: string, version: string,
                 Authorization: `Basic ${token}`
                 },
             body: {
-                  fields: 'id,key,summary,components,summary,assignee,project',
-                  jql: `project IN (\"${projects}\" AND component = \"${version}\ ORDER BY created DESC`,
+                  fields: 'id,key,summary,components,assignee,project',
+                  jql: `project IN (\"${projects}\" AND component = \"${version}\" ORDER BY created DESC`,
                   maxResults: 100
                 },
             json: true
@@ -100,24 +100,6 @@ function getGroupedIssues(rawValue: any, baseUrl: string): GroupedIssue[] {
     return _.map(groupedResult, (items: Issue[], key: string) => {
         return new GroupedIssue(key, items);
     });
-}
-
-async function getReleaseNotesUrl(baseUrl: string, domain: string, project: string, version: string, token: string,): Promise<string> {
-    const url = `${baseUrl}rest/api/3/project/${project}/version`
-    const response = await request.get(url, {
-        headers: {
-            Authorization: `Basic ${token}`
-        },
-        qs: {
-            query: version,
-        },
-        json: true,
-    });
-    const versionId = response.values[0]?.id
-    if (versionId == undefined) {
-        return ""
-    }
-    return `https://${domain}.atlassian.net/projects/${project}/versions/${versionId}`
 }
 
 class Issue {
