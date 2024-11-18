@@ -44,14 +44,15 @@ const _ = __importStar(__nccwpck_require__(250));
     const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`;
     try {
         const releaseData = await getReleaseData(baseUrl, projects, version, token);
-        console.log(`releaseData = ${releaseData}`);
         core.setOutput("releaseData", releaseData);
     }
     catch (error) {
+        core.setOutput("I failed:", error.message);
         core.setFailed(error.message);
     }
 })();
 async function getReleaseData(baseUrl, projects, version, token) {
+    core.setOutput("Start Of the getReleaseData method", "");
     var options = {
         method: 'POST',
         uri: baseUrl,
@@ -59,13 +60,16 @@ async function getReleaseData(baseUrl, projects, version, token) {
             Authorization: `Basic ${token}`
         },
         body: {
-            fields: 'id,key,summary,components,assignee,project',
-            jql: `project IN (\"${projects}\" AND component = \"${version}\" ORDER BY created DESC`,
+            fields: ["id", "key", "summary", "components", "assignee", "project"],
+            jql: `project IN (\"${projects}\") AND component = \"${version}\" ORDER BY created DESC`,
             maxResults: 100
         },
         json: true
     };
-    return await (0, request_promise_1.default)(options);
+    core.setOutput("options: ", options);
+    const response = await (0, request_promise_1.default)(options);
+    core.setOutput("response: ", response);
+    return response;
 }
 async function getMarkdownReleaseNotes(baseUrl, project, version, token, releaseNotesUrl) {
     const url = baseUrl + "rest/api/3/search";

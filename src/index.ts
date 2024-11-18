@@ -13,17 +13,16 @@ import * as _ from 'lodash'
 
     try {
         const releaseData = await getReleaseData(baseUrl, projects, version, token)
-        console.setOutput(`releaseData = ${releaseData}`)
         core.setOutput("releaseData", releaseData);
     } catch (error: any) {
-        console.setOutput(`I failed = ${releaseData}`)
+        core.setOutput("I failed:", error.message)
         core.setFailed(error.message);
     }
 
 })();
 
 async function getReleaseData(baseUrl: string, projects: string, version: string, token: string): Promise<string> {
-    console.setOutput("Start Of the getReleaseData method")
+    core.setOutput("Start Of the getReleaseData method", "")
 
     var options = {
             method: 'POST',
@@ -32,17 +31,17 @@ async function getReleaseData(baseUrl: string, projects: string, version: string
                 Authorization: `Basic ${token}`
                 },
             body: {
-                  fields: 'id,key,summary,components,assignee,project',
-                  jql: `project IN (\"${projects}\" AND component = \"${version}\" ORDER BY created DESC`,
+                  fields: ["id", "key", "summary", "components", "assignee", "project"],
+                  jql: `project IN (\"${projects}\") AND component = \"${version}\" ORDER BY created DESC`,
                   maxResults: 100
                 },
             json: true
         };
 
-    console.setOutput(`options = ${options}`)
-    val response =  await request(options)
-    console.setOutput(`response = ${response}`)
-    return request
+    core.setOutput("options: ", options)
+    const response = await request(options)
+    core.setOutput("response: ", response)
+    return response
 }
 
 async function getMarkdownReleaseNotes(baseUrl: string, project: string, version: string, token: string, releaseNotesUrl: string): Promise<string> {
