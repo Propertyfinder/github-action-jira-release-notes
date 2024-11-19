@@ -46,7 +46,7 @@ const _ = __importStar(__nccwpck_require__(250));
         const releaseData = await getIssues(baseUrl, projects, version, token);
         const releaseUrl = getJiraQueryUrl(domain, projects, version);
         core.setOutput("release_notes_url", releaseUrl);
-        core.setOutput("release_notes", `${releaseUrl}\n${releaseData}`);
+        core.setOutput("release_notes", `${releaseUrl}\n${JSON.stringify(releaseData, null, 2)}`);
     }
     catch (error) {
         core.setOutput("I failed:", error.message);
@@ -67,7 +67,7 @@ async function getIssues(baseUrl, projects, version, token) {
         },
         json: true
     };
-    console.log("options=", JSON.stringify(options, null, 2).substring(0, 40));
+    console.log("options=", JSON.stringify(options, null, 2).substring(0, 80));
     const response = await (0, request_promise_1.default)(options);
     console.log("Response:", JSON.stringify(response, null, 2).substring(0, 40));
     return response;

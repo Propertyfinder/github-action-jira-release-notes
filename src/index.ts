@@ -15,7 +15,7 @@ import * as _ from 'lodash'
         const releaseData = await getIssues(baseUrl, projects, version, token)
         const releaseUrl = getJiraQueryUrl(domain, projects, version)
         core.setOutput("release_notes_url", releaseUrl);
-        core.setOutput("release_notes", `${releaseUrl}\n${releaseData}`);
+        core.setOutput("release_notes", `${releaseUrl}\n${JSON.stringify(releaseData, null, 2)}`);
     } catch (error: any) {
         core.setOutput("I failed:", error.message)
         core.setFailed(error.message);
