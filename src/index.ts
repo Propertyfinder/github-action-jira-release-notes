@@ -39,7 +39,7 @@ async function getIssues(baseUrl: string, projects: string, version: string, tok
             json: true
         };
 
-    console.log("options: ", options)
+    //console.log("options: ", options)
     const response = await request(options)
     console.log("response: ", response)
     return response

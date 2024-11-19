@@ -68,9 +68,9 @@ async function getIssues(baseUrl, projects, version, token) {
         },
         json: true
     };
-    console.log("options: ", options);
+    //console.log("options: ", options)
     const response = await (0, request_promise_1.default)(options);
-    //console.log("response: ", response)
+    console.log("response: ", response);
     return response;
 }
 function getJiraQueryUrl(domain, projects, version) {
