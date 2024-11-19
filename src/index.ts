@@ -13,7 +13,8 @@ import * as _ from 'lodash'
 
     try {
         const releaseData = await getIssues(baseUrl, projects, version, token)
-        core.setOutput("release_notes_url", getJiraQueryUrl(domain, projects, version));
+        const releaseUrl = getJiraQueryUrl(domain, projects, version)
+        core.setOutput("release_notes_url", releaseUrl);
         core.setOutput("release_notes", releaseData);
         console.log(`Release Data: \n ${releaseData}`)
     } catch (error: any) {
@@ -32,7 +33,7 @@ async function getIssues(baseUrl: string, projects: string, version: string, tok
                 },
             body: {
                   //fields: ["id", "key", "summary", "components", "assignee", "project"],
-                  jql: `project IN (\"${projects}\") AND component = \"${version}\" ORDER BY created DESC`,
+                  jql: `project IN (NA, CX, GROW, NP) AND component = Android ORDER BY created DESC`,
                   maxResults: 100
                 },
             json: true
