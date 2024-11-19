@@ -37,17 +37,16 @@ const core = __importStar(__nccwpck_require__(2186));
 const request_promise_1 = __importDefault(__nccwpck_require__(8313));
 const _ = __importStar(__nccwpck_require__(250));
 (async () => {
-    const domain = core.getInput("domain");
-    const projects = core.getInput("projects");
-    const version = core.getInput("version");
-    const token = core.getInput("auth-token");
+    const domain = core.getInput("domain") || "pfinder";
+    const projects = core.getInput("projects") || "NA, CX, GROW, NP";
+    const version = core.getInput("version") || "Android";
+    const token = core.getInput("auth-token") || "ZW1haWxAZXhhbXBsZS5jb206PGFwaV90b2tlbj4=";
     const baseUrl = `https://pfinder.atlassian.net/rest/api/3/search/jql`;
     try {
         const releaseData = await getIssues(baseUrl, projects, version, token);
         const releaseUrl = getJiraQueryUrl(domain, projects, version);
         core.setOutput("release_notes_url", releaseUrl);
         core.setOutput("release_notes", `${releaseUrl}\n${releaseData}`);
-        console.log(`Release Data: \n ${releaseData}`);
     }
     catch (error) {
         core.setOutput("I failed:", error.message);
@@ -63,19 +62,19 @@ async function getIssues(baseUrl, projects, version, token) {
         },
         body: {
             fields: ["id", "key", "summary", "components", "assignee", "project"],
-            jql: `project IN (NA, CX, GROW, NP) AND component = Android ORDER BY created DESC`,
+            jql: `project IN (${projects}) AND component = ${version} ORDER BY created DESC`,
             maxResults: 100
         },
         json: true
     };
-    //console.log("options: ", options)
+    console.log("options=", JSON.stringify(options, null, 2).substring(0, 40));
     const response = await (0, request_promise_1.default)(options);
-    console.log("response: ", response);
+    console.log("Response:", JSON.stringify(response, null, 2).substring(0, 40));
     return response;
 }
 function getJiraQueryUrl(domain, projects, version) {
-    const firstProject = projects.split(",")[0];
-    const url = `https://${domain}.atlassian.net/jira/software/c/projects/${firstProject}/issues/project IN (${projects}) AND component = ${version}`;
+    const firstProject = projects.split(",")[0].trim();
+    const url = `https://${domain}.atlassian.net/jira/software/c/projects/issues/project IN (${projects}) AND component = ${version}`;
     return `## [Jira - PF Android - ${version}](${url})`;
 }
 function getReleaseNotes(response) {
