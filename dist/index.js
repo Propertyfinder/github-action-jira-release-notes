@@ -46,7 +46,7 @@ const _ = __importStar(__nccwpck_require__(250));
         const releaseData = await getIssues(baseUrl, projects, version, token);
         const releaseUrl = getJiraQueryUrl(domain, projects, version);
         core.setOutput("release_notes_url", releaseUrl);
-        core.setOutput("release_notes", releaseData);
+        core.setOutput("release_notes", `${releaseUrl}\n${releaseData}`);
         console.log(`Release Data: \n ${releaseData}`);
     }
     catch (error) {
