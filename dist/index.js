@@ -62,7 +62,7 @@ async function getIssues(baseUrl, projects, version, token) {
             Authorization: `Basic ${token}`
         },
         body: {
-            //fields: ["id", "key", "summary", "components", "assignee", "project"],
+            fields: ["id", "key", "summary", "components", "assignee", "project"],
             jql: `project IN (NA, CX, GROW, NP) AND component = Android ORDER BY created DESC`,
             maxResults: 100
         },
