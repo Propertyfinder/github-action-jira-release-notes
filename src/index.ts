@@ -38,7 +38,7 @@ async function getIssues(baseUrl: string, projects: string, version: string, tok
             json: true
         };
 
-    console.log("options=", JSON.stringify(options, null, 2).substring(0, 40));
+    console.log("options=", JSON.stringify(options, null, 2).substring(0, 80));
     const response = await request(options)
     console.log("Response:", JSON.stringify(response, null, 2).substring(0, 40));
     return response
