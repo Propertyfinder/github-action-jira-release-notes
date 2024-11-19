@@ -9,7 +9,7 @@ import * as _ from 'lodash'
     const version = core.getInput("version")
     const token = core.getInput("auth-token")
 
-    const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`
+    const baseUrl = `https://pfinder.atlassian.net/rest/api/3/search/jql`
 
     try {
         const releaseData = await getIssues(baseUrl, projects, version, token)
