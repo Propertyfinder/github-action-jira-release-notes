@@ -44,7 +44,8 @@ const _ = __importStar(__nccwpck_require__(250));
     const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`;
     try {
         const releaseData = await getReleaseData(baseUrl, projects, version, token);
-        core.setOutput("releaseData", releaseData);
+        core.setOutput("release_notes_url", getJiraQueryUrl(domain, projects, version));
+        core.setOutput("release_notes", releaseData);
     }
     catch (error) {
         core.setOutput("I failed:", error.message);
@@ -71,25 +72,13 @@ async function getReleaseData(baseUrl, projects, version, token) {
     core.setOutput("response: ", response);
     return response;
 }
-async function getMarkdownReleaseNotes(baseUrl, project, version, token, releaseNotesUrl) {
-    const url = baseUrl + "rest/api/3/search";
-    const response = await request_promise_1.default.get(url, {
-        headers: {
-            Authorization: `Basic ${token}`
-        },
-        qs: {
-            "jql": `project=\"${project}\" AND fixVersion =\"${version}\"`,
-            maxResults: 1000,
-            fields: "project,issuetype,summary",
-        },
-        json: true,
-    });
-    const title = getTitle(response, version, releaseNotesUrl);
-    const note = getNote(response, baseUrl);
-    return title + note;
+function getJiraQueryUrl(domain, projects, version) {
+    const firstProject = projects.split(",")[0];
+    const url = `https://${domain}.atlassian.net/jira/software/c/projects/${firstProject}/issues/project IN (${projects}) AND component = ${version}`;
+    return `## [Jira - PF Android - ${version}](${url})`;
 }
-function getTitle(response, version, releaseNotesUrl) {
-    return `## [Jira](${releaseNotesUrl})`;
+function getReleaseNotes(response) {
+    return "";
 }
 function getNote(response, baseUrl) {
     const groupedIssues = getGroupedIssues(response.issues, baseUrl);

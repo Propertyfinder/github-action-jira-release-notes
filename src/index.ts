@@ -13,7 +13,8 @@ import * as _ from 'lodash'
 
     try {
         const releaseData = await getReleaseData(baseUrl, projects, version, token)
-        core.setOutput("releaseData", releaseData);
+        core.setOutput("release_notes_url", getJiraQueryUrl(domain, projects, version));
+        core.setOutput("release_notes", releaseData);
     } catch (error: any) {
         core.setOutput("I failed:", error.message)
         core.setFailed(error.message);
@@ -44,29 +45,16 @@ async function getReleaseData(baseUrl: string, projects: string, version: string
     return response
 }
 
-async function getMarkdownReleaseNotes(baseUrl: string, project: string, version: string, token: string, releaseNotesUrl: string): Promise<string> {
-    const url = baseUrl + "rest/api/3/search"
-    const response = await request.get(url, {
-        headers: {
-            Authorization: `Basic ${token}`
-        },
-        qs: {
-            "jql": `project=\"${project}\" AND fixVersion =\"${version}\"`,
-            maxResults: 1000,
-            fields: "project,issuetype,summary",
-        },
-        json: true,
-    });
-
-    const title = getTitle(response, version, releaseNotesUrl)
-    const note = getNote(response, baseUrl)
-    return title + note
-
+function getJiraQueryUrl(domain: string, projects: string, version: string): string {
+    const firstProject = projects.split(",")[0]
+    const url = `https://${domain}.atlassian.net/jira/software/c/projects/${firstProject}/issues/project IN (${projects}) AND component = ${version}`
+    return `## [Jira - PF Android - ${version}](${url})`
 }
 
-function getTitle(response: any, version: string, releaseNotesUrl: string): string {
-    return `## [Jira](${releaseNotesUrl})`
+function getReleaseNotes(response: string): string{
+    return ""
 }
+
 
 function getNote(response: any, baseUrl: string): string {
     const groupedIssues = getGroupedIssues(response.issues, baseUrl)
@@ -108,7 +96,6 @@ function getGroupedIssues(rawValue: any, baseUrl: string): GroupedIssue[] {
 }
 
 class Issue {
-
     key: string
     summary: string
     type: string
