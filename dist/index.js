@@ -44,7 +44,8 @@ const _ = __importStar(__nccwpck_require__(250));
     const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`;
     try {
         const releaseData = await getIssues(baseUrl, projects, version, token);
-        core.setOutput("release_notes_url", getJiraQueryUrl(domain, projects, version));
+        const releaseUrl = getJiraQueryUrl(domain, projects, version);
+        core.setOutput("release_notes_url", releaseUrl);
         core.setOutput("release_notes", releaseData);
         console.log(`Release Data: \n ${releaseData}`);
     }
@@ -62,7 +63,7 @@ async function getIssues(baseUrl, projects, version, token) {
         },
         body: {
             //fields: ["id", "key", "summary", "components", "assignee", "project"],
-            jql: `project IN (\"${projects}\") AND component = \"${version}\" ORDER BY created DESC`,
+            jql: `project IN (NA, CX, GROW, NP) AND component = Android ORDER BY created DESC`,
             maxResults: 100
         },
         json: true
