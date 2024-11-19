@@ -43,17 +43,17 @@ const _ = __importStar(__nccwpck_require__(250));
     const token = core.getInput("auth-token");
     const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`;
     try {
-        const releaseData = await getReleaseData(baseUrl, projects, version, token);
+        const releaseData = await getIssues(baseUrl, projects, version, token);
         core.setOutput("release_notes_url", getJiraQueryUrl(domain, projects, version));
         core.setOutput("release_notes", releaseData);
+        console.log(`Release Data: \n ${releaseData}`);
     }
     catch (error) {
         core.setOutput("I failed:", error.message);
         core.setFailed(error.message);
     }
 })();
-async function getReleaseData(baseUrl, projects, version, token) {
-    core.setOutput("Start Of the getReleaseData method", "");
+async function getIssues(baseUrl, projects, version, token) {
     var options = {
         method: 'POST',
         uri: baseUrl,
@@ -61,15 +61,15 @@ async function getReleaseData(baseUrl, projects, version, token) {
             Authorization: `Basic ${token}`
         },
         body: {
-            fields: ["id", "key", "summary", "components", "assignee", "project"],
+            //fields: ["id", "key", "summary", "components", "assignee", "project"],
             jql: `project IN (\"${projects}\") AND component = \"${version}\" ORDER BY created DESC`,
             maxResults: 100
         },
         json: true
     };
-    core.setOutput("options: ", options);
+    console.log("options: ", options);
     const response = await (0, request_promise_1.default)(options);
-    core.setOutput("response: ", response);
+    console.log("response: ", response);
     return response;
 }
 function getJiraQueryUrl(domain, projects, version) {
