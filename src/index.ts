@@ -58,10 +58,10 @@ const jsonString = `
     try {
         const releaseData = await getIssues(baseUrl, projects, version, token);
         const releaseUrl = getJiraQueryUrl(domain, projects, version);
-        const parsedJson : IssuesData = JSON.parse(jsonString)
+        const parsedJson : IssuesData = JSON.parse(releaseData)
         const releaseNotes = convertToGitHubReleaseGroupedByProject(parsedJson, version, releaseUrl);
         console.log("\n\nreleaseNotes:", releaseNotes);
-        core.setOutput("release_notes", `${releaseUrl}\n${JSON.stringify(releaseData, null, 2)}`);
+        core.setOutput("release_notes", `${releaseNotes}`);
     } catch (error: any) {
         core.setFailed(error.message);
     }

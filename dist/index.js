@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const request_promise_1 = __importDefault(__nccwpck_require__(8313));
-const jsonString = `
+const jsonString = (/* unused pure expression or super */ null && (`
 {
     "issues": [
         {
@@ -76,7 +76,7 @@ const jsonString = `
             }
         }
     ]
-}`;
+}`));
 (async () => {
     const domain = core.getInput("domain") || "pfinder";
     const projects = core.getInput("projects") || "NA, CX, GROW, NP";
@@ -86,10 +86,10 @@ const jsonString = `
     try {
         const releaseData = await getIssues(baseUrl, projects, version, token);
         const releaseUrl = getJiraQueryUrl(domain, projects, version);
-        const parsedJson = JSON.parse(jsonString);
+        const parsedJson = JSON.parse(releaseData);
         const releaseNotes = convertToGitHubReleaseGroupedByProject(parsedJson, version, releaseUrl);
         console.log("\n\nreleaseNotes:", releaseNotes);
-        core.setOutput("release_notes", `${releaseUrl}\n${JSON.stringify(releaseData, null, 2)}`);
+        core.setOutput("release_notes", `${releaseNotes}`);
     }
     catch (error) {
         core.setFailed(error.message);
