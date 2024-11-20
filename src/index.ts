@@ -46,8 +46,10 @@ async function getIssues(baseUrl: string, projects: string, version: string, tok
 
 function getJiraQueryUrl(domain: string, projects: string, version: string): string {
     const firstProject = projects.split(",")[0].trim()
-    const url = `https://${domain}.atlassian.net/jira/software/c/projects/issues/project IN (${projects}) AND component = ${version}`
-    return `## [Jira - PF Android - ${version}](${url})`
+    const url = `https://${domain}.atlassian.net/jira/software/c/projects${firstProject}/issues`
+    const query = `project IN (${projects}) AND component = ${version}`
+    const encodedQuery = encodeURIComponent(query);
+    return `## [Jira - PF ${version}](${url}?jql=${encodedQuery})`
 }
 
 function getReleaseNotes(response: string): string{

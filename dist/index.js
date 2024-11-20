@@ -74,8 +74,12 @@ async function getIssues(baseUrl, projects, version, token) {
 }
 function getJiraQueryUrl(domain, projects, version) {
     const firstProject = projects.split(",")[0].trim();
-    const url = `https://${domain}.atlassian.net/jira/software/c/projects/issues/project IN (${projects}) AND component = ${version}`;
-    return `## [Jira - PF Android - ${version}](${url})`;
+    const url = `https://${domain}.atlassian.net/jira/software/c/projects${firstProject}/issues`;
+    const projectQuery = `project IN (${projects.split(",").map(p => p.trim()).join(", ")})`;
+    const componentQuery = `component = ${version}`;
+    const fullQuery = `${projectQuery} AND ${componentQuery}`;
+    const encodedQuery = encodeURIComponent(fullQuery);
+    return `## [Jira - PF Android - ${version}](${url}?jql=${encodedQuery})`;
 }
 function getReleaseNotes(response) {
     return "";
