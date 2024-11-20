@@ -153,8 +153,9 @@ function convertToGitHubReleaseGroupedByProject(data, version, releaseUrl) {
     return `# ${releaseTitle}\n\n${releaseBody}`;
 }
 function sanitizeMarkdown(input) {
-    // Escape single quotes and special characters for shell safety
-    return input.replace(/'/g, "\\'").replace(/([\[\]\(\)_*`~])/g, "\\$1");
+    // Replace single quotes with escaped single quotes for shell safety
+    // Also, escape Markdown special characters
+    return input.replace(/'/g, "&#39;").replace(/([\[\]\(\)_*`~])/g, "\\$1");
 }
 class GroupedIssue {
     constructor(type, issues) {
