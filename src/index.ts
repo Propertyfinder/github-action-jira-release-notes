@@ -51,7 +51,7 @@ const jsonString = `
     const domain = core.getInput("domain") || "pfinder";
     const projects = core.getInput("projects") || "NA, CX, GROW, NP";
     const version = core.getInput("version") || "Android";
-    const token = core.getInput("auth-token") || "ZW1haWxAZXhhbXBsZS5jb206PGFwaV90b2tlbj4="
+    const token = core.getInput("auth-token")
     const order = core.getInput("order") || "DESC"
 
     const baseUrl = `https://pfinder.atlassian.net/rest/api/3/search/jql`
@@ -89,10 +89,9 @@ async function getIssues(
                 },
             json: true
         };
-    console.log("options=", JSON.stringify(options, null, 2).toString());
     const response = await request(options);
-    const stringifyResponse = JSON.stringify(response, null, 2).toString();
-    console.log("Response: ", stringifyResponse);
+    const stringifyResponse = JSON.stringify(response, null, 2);
+    console.log("Response: ", stringifyResponse.substring(0, 40));
     return response
 }
 
