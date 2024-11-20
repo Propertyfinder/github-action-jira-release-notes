@@ -139,8 +139,9 @@ function convertToGitHubReleaseGroupedByProject(data: IssuesData, version: strin
 }
 
 function sanitizeMarkdown(input: string): string {
-    // Escape single quotes and special characters for shell safety
-    return input.replace(/'/g, "\\'").replace(/([\[\]\(\)_*`~])/g, "\\$1");
+    // Replace single quotes with escaped single quotes for shell safety
+    // Also, escape Markdown special characters
+    return input.replace(/'/g, "&#39;").replace(/([\[\]\(\)_*`~])/g, "\\$1");
 }
 
 interface Issue {
