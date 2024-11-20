@@ -52,15 +52,16 @@ const jsonString = `
     const projects = core.getInput("projects") || "NA, CX, GROW, NP";
     const version = core.getInput("version") || "Android";
     const token = core.getInput("auth-token") || "ZW1haWxAZXhhbXBsZS5jb206PGFwaV90b2tlbj4="
+    const order = core.getInput("order") || "DESC"
 
     const baseUrl = `https://pfinder.atlassian.net/rest/api/3/search/jql`
 
     try {
-        const releaseData = await getIssues(baseUrl, projects, version, token);
+        const releaseData = await getIssues(baseUrl, projects, version, order, token);
         const releaseUrl = getJiraQueryUrl(domain, projects, version);
         const parsedJson : IssuesData = JSON.parse(releaseData)
         const releaseNotes = convertToGitHubReleaseGroupedByProject(parsedJson, version, releaseUrl);
-        console.log("\n\nreleaseNotes:", releaseNotes);
+        console.log("releaseNotes:", releaseNotes);
         core.setOutput("release_notes", `${releaseNotes}`);
     } catch (error: any) {
         core.setFailed(error.message);
@@ -68,7 +69,13 @@ const jsonString = `
 
 })();
 
-async function getIssues(baseUrl: string, projects: string, version: string, token: string): Promise<string> {
+async function getIssues(
+    baseUrl: string,
+    projects: string,
+    version: string,
+    order: string,
+    token: string,
+): Promise<string> {
     var options = {
             method: 'POST',
             uri: baseUrl,
@@ -77,15 +84,15 @@ async function getIssues(baseUrl: string, projects: string, version: string, tok
                 },
             body: {
                   fields: ["id", "key", "summary", "components", "assignee", "project"],
-                  jql: `project IN (${projects}) AND component = ${version} ORDER BY created DESC`,
+                  jql: `project IN (${projects}) AND component = ${version} ORDER BY created ${order}`,
                   maxResults: 100
                 },
             json: true
         };
-
-    console.log("options=", JSON.stringify(options, null, 2).substring(0, 80));
-    const response = await request(options)
-    console.log("Response:", JSON.stringify(response, null, 2).substring(0, 40));
+    console.log("options=", JSON.stringify(options, null, 2).toString());
+    const response = await request(options);
+    const stringifyResponse = JSON.stringify(response, null, 2).toString();
+    console.log("Response: ", stringifyResponse);
     return response
 }
 

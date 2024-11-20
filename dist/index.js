@@ -82,20 +82,21 @@ const jsonString = (/* unused pure expression or super */ null && (`
     const projects = core.getInput("projects") || "NA, CX, GROW, NP";
     const version = core.getInput("version") || "Android";
     const token = core.getInput("auth-token") || "ZW1haWxAZXhhbXBsZS5jb206PGFwaV90b2tlbj4=";
+    const order = core.getInput("order") || "DESC";
     const baseUrl = `https://pfinder.atlassian.net/rest/api/3/search/jql`;
     try {
-        const releaseData = await getIssues(baseUrl, projects, version, token);
+        const releaseData = await getIssues(baseUrl, projects, version, order, token);
         const releaseUrl = getJiraQueryUrl(domain, projects, version);
         const parsedJson = JSON.parse(releaseData);
         const releaseNotes = convertToGitHubReleaseGroupedByProject(parsedJson, version, releaseUrl);
-        console.log("\n\nreleaseNotes:", releaseNotes);
+        console.log("releaseNotes:", releaseNotes);
         core.setOutput("release_notes", `${releaseNotes}`);
     }
     catch (error) {
         core.setFailed(error.message);
     }
 })();
-async function getIssues(baseUrl, projects, version, token) {
+async function getIssues(baseUrl, projects, version, order, token) {
     var options = {
         method: 'POST',
         uri: baseUrl,
@@ -104,14 +105,15 @@ async function getIssues(baseUrl, projects, version, token) {
         },
         body: {
             fields: ["id", "key", "summary", "components", "assignee", "project"],
-            jql: `project IN (${projects}) AND component = ${version} ORDER BY created DESC`,
+            jql: `project IN (${projects}) AND component = ${version} ORDER BY created ${order}`,
             maxResults: 100
         },
         json: true
     };
-    console.log("options=", JSON.stringify(options, null, 2).substring(0, 80));
+    console.log("options=", JSON.stringify(options, null, 2).toString());
     const response = await (0, request_promise_1.default)(options);
-    console.log("Response:", JSON.stringify(response, null, 2).substring(0, 40));
+    const stringifyResponse = JSON.stringify(response, null, 2).toString();
+    console.log("Response: ", stringifyResponse);
     return response;
 }
 function getJiraQueryUrl(domain, projects, version) {
