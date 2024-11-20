@@ -59,8 +59,7 @@ const jsonString = `
     try {
         const releaseData = await getIssues(baseUrl, projects, version, order, token);
         const releaseUrl = getJiraQueryUrl(domain, projects, version);
-        const parsedJson : IssuesData = JSON.parse(releaseData)
-        const releaseNotes = convertToGitHubReleaseGroupedByProject(parsedJson, version, releaseUrl);
+        const releaseNotes = convertToGitHubReleaseGroupedByProject(releaseData, version, releaseUrl);
         console.log("releaseNotes:", releaseNotes);
         core.setOutput("release_notes", `${releaseNotes}`);
     } catch (error: any) {
@@ -75,7 +74,7 @@ async function getIssues(
     version: string,
     order: string,
     token: string,
-): Promise<string> {
+): Promise<IssuesData> {
     var options = {
             method: 'POST',
             uri: baseUrl,
@@ -89,10 +88,10 @@ async function getIssues(
                 },
             json: true
         };
-    const response = await request(options);
-    const stringifyResponse = JSON.stringify(response, null, 2);
-    console.log("Response: ", stringifyResponse.substring(0, 40));
-    return response
+    console.log("Options:", JSON.stringify(options, null, 2));
+    const response: IssuesData = await request(options);
+    console.log("Response:", JSON.stringify(response, null, 2));
+    return response;
 }
 
 function getJiraQueryUrl(domain: string, projects: string, version: string): string {

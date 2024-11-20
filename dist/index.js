@@ -87,8 +87,7 @@ const jsonString = (/* unused pure expression or super */ null && (`
     try {
         const releaseData = await getIssues(baseUrl, projects, version, order, token);
         const releaseUrl = getJiraQueryUrl(domain, projects, version);
-        const parsedJson = JSON.parse(releaseData);
-        const releaseNotes = convertToGitHubReleaseGroupedByProject(parsedJson, version, releaseUrl);
+        const releaseNotes = convertToGitHubReleaseGroupedByProject(releaseData, version, releaseUrl);
         console.log("releaseNotes:", releaseNotes);
         core.setOutput("release_notes", `${releaseNotes}`);
     }
@@ -110,9 +109,9 @@ async function getIssues(baseUrl, projects, version, order, token) {
         },
         json: true
     };
+    console.log("Options:", JSON.stringify(options, null, 2));
     const response = await (0, request_promise_1.default)(options);
-    const stringifyResponse = JSON.stringify(response, null, 2);
-    console.log("Response: ", stringifyResponse.substring(0, 40));
+    console.log("Response:", JSON.stringify(response, null, 2));
     return response;
 }
 function getJiraQueryUrl(domain, projects, version) {
