@@ -134,23 +134,27 @@ function convertToGitHubReleaseGroupedByProject(data, version, releaseUrl) {
         group[projectName].push(issue);
         return group;
     }, {});
-    // Generate release notes grouped by project
+    // Sanitize and Generate release notes grouped by project
     const releaseBody = Object.entries(issuesByProject)
         .map(([projectName, issues]) => {
-        const projectSection = `## ${projectName}\n`;
+        const projectSection = `## ${sanitizeMarkdown(projectName)}\n`;
         const issuesList = issues
             .map(issue => {
             const assignee = issue.fields.assignee
-                ? issue.fields.assignee.displayName
+                ? sanitizeMarkdown(issue.fields.assignee.displayName)
                 : "Unassigned";
-            const components = issue.fields.components.map(c => c.name).join(", ");
-            return `[${issue.key}](https://pfinder.atlassian.net/browse/${issue.key}) ${issue.fields.summary} - ${assignee}`;
+            const components = sanitizeMarkdown(issue.fields.components.map(c => c.name).join(", "));
+            return `[${sanitizeMarkdown(issue.key)}](https://pfinder.atlassian.net/browse/${sanitizeMarkdown(issue.key)}) ${sanitizeMarkdown(issue.fields.summary)} - ${assignee}`;
         })
             .join("\n\n");
         return projectSection + issuesList;
     })
         .join("\n\n");
     return `# ${releaseTitle}\n\n${releaseBody}`;
+}
+function sanitizeMarkdown(input) {
+    // Escape single quotes and special characters for shell safety
+    return input.replace(/'/g, "\\'").replace(/([\[\]\(\)_*`~])/g, "\\$1");
 }
 class GroupedIssue {
     constructor(type, issues) {
