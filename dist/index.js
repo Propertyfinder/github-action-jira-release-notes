@@ -86,7 +86,7 @@ const jsonString = (/* unused pure expression or super */ null && (`
     const baseUrl = `https://pfinder.atlassian.net/rest/api/3/search/jql`;
     try {
         const releaseData = await getIssues(baseUrl, projects, version, order, token);
-        const releaseUrl = getJiraQueryUrl(domain, projects, version);
+        const releaseUrl = getJiraVersionTitle(domain, projects, version);
         const releaseNotes = convertToGitHubReleaseGroupedByProject(releaseData, version, releaseUrl);
         console.log("releaseNotes:", releaseNotes);
         core.setOutput("release_notes", `${releaseNotes}`);
@@ -114,17 +114,16 @@ async function getIssues(baseUrl, projects, version, order, token) {
     console.log("Response:", JSON.stringify(response, null, 2));
     return response;
 }
-function getJiraQueryUrl(domain, projects, version) {
+function getJiraVersionTitle(domain, projects, version) {
     const firstProject = projects.split(",")[0].trim();
     const url = `https://${domain}.atlassian.net/jira/software/c/projects/${firstProject}/issues`;
     const query = `project IN (${projects}) AND component = ${version}`;
     const encodedQuery = encodeURIComponent(query);
-    // working
+    // working - do not touch
     // [Jira - PF Android](https://pfinder.atlassian.net/jira/software/c/projects/NA/issues?jql=project%20IN%20(NA%2C%20CX%2C%20GROW%2C%20NP)%20AND%20component%20%3D%20Android)
-    return `## [Jira - PF ${version}](${url}?jql=${encodedQuery})`;
+    return `[Jira - PF ${version}](${url}?jql=${encodedQuery})`;
 }
-function convertToGitHubReleaseGroupedByProject(data, version, releaseUrl) {
-    const releaseTitle = `[Pf Android - ${version}](${releaseUrl})`;
+function convertToGitHubReleaseGroupedByProject(data, version, jiraVersionTitle) {
     // Group issues by project name
     const issuesByProject = data.issues.reduce((group, issue) => {
         const projectName = issue.fields.project.name;
@@ -134,7 +133,6 @@ function convertToGitHubReleaseGroupedByProject(data, version, releaseUrl) {
         group[projectName].push(issue);
         return group;
     }, {});
-    // Sanitize and Generate release notes grouped by project
     const releaseBody = Object.entries(issuesByProject)
         .map(([projectName, issues]) => {
         const projectSection = `## ${sanitizeMarkdown(projectName)}\n`;
@@ -150,11 +148,9 @@ function convertToGitHubReleaseGroupedByProject(data, version, releaseUrl) {
         return projectSection + issuesList;
     })
         .join("\n\n");
-    return `# ${releaseTitle}\n\n${releaseBody}`;
+    return `# ${jiraVersionTitle}\n\n${releaseBody}`;
 }
 function sanitizeMarkdown(input) {
-    // Replace single quotes with escaped single quotes for shell safety
-    // Also, escape Markdown special characters
     return input.replace(/'/g, "&#39;").replace(/([\[\]\(\)_*`~])/g, "\\$1");
 }
 class GroupedIssue {
