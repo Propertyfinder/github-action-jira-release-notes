@@ -40,12 +40,13 @@ const request_promise_1 = __importDefault(__nccwpck_require__(8313));
     const projects = core.getInput("projects");
     const version = core.getInput("version");
     const token = core.getInput("auth-token");
-    const order = core.getInput("order") || "DESC";
+    const order = core.getInput("order");
     const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`;
+    const jiraQuery = `project IN (${projects}) AND labels IN (${version}) ORDER BY created ${order}`;
     try {
-        const releaseData = await getIssues(baseUrl, projects, version, order, token);
-        const releaseUrl = getJiraVersionTitle(domain, projects, version);
-        const releaseNotes = convertToGitHubReleaseGroupedByProject(releaseData, version, releaseUrl);
+        const releaseData = await getIssues(baseUrl, jiraQuery, token);
+        const releaseUrl = getJiraVersionTitle(domain, projects, jiraQuery, version);
+        const releaseNotes = convertToGitHubReleaseGroupedByProject(domain, releaseData, releaseUrl);
         console.log("releaseNotes:", releaseNotes);
         core.setOutput("release_notes", `${releaseNotes}`);
     }
@@ -53,7 +54,7 @@ const request_promise_1 = __importDefault(__nccwpck_require__(8313));
         core.setFailed(error.message);
     }
 })();
-async function getIssues(baseUrl, projects, version, order, token) {
+async function getIssues(baseUrl, jiraQuery, token) {
     var options = {
         method: 'POST',
         uri: baseUrl,
@@ -62,7 +63,7 @@ async function getIssues(baseUrl, projects, version, order, token) {
         },
         body: {
             fields: ["id", "key", "summary", "components", "assignee", "project", "labels"],
-            jql: `project IN (${projects}) AND labels IN (${version}) ORDER BY created ${order}`,
+            jql: jiraQuery,
             maxResults: 100
         },
         json: true
@@ -72,14 +73,14 @@ async function getIssues(baseUrl, projects, version, order, token) {
     console.log("Response:", JSON.stringify(response, null, 2));
     return response;
 }
-function getJiraVersionTitle(domain, projects, version) {
+function getJiraVersionTitle(domain, projects, jiraQuery, version) {
     const firstProject = projects.split(",")[0].trim();
     const url = `https://${domain}.atlassian.net/jira/software/c/projects/${firstProject}/issues`;
-    const query = `project IN (${projects}) AND labels IN (${version})`;
+    const query = jiraQuery;
     const encodedQuery = encodeURIComponent(query);
     return `[Jira - ${version}](${url}?jql=${encodedQuery})`;
 }
-function convertToGitHubReleaseGroupedByProject(data, version, jiraVersionTitle) {
+function convertToGitHubReleaseGroupedByProject(domain, data, jiraVersionTitle) {
     // Group issues by project name
     const issuesByProject = data.issues.reduce((group, issue) => {
         const projectName = issue.fields.project.name;
@@ -98,7 +99,7 @@ function convertToGitHubReleaseGroupedByProject(data, version, jiraVersionTitle)
                 ? sanitizeMarkdown(issue.fields.assignee.displayName)
                 : "Unassigned";
             const components = sanitizeMarkdown(issue.fields.components.map(c => c.name).join(", "));
-            return `[${sanitizeMarkdown(issue.key)}](https://pfinder.atlassian.net/browse/${sanitizeMarkdown(issue.key)}) ${sanitizeMarkdown(issue.fields.summary)} - ${assignee}`;
+            return `[${sanitizeMarkdown(issue.key)}](https://${domain}.atlassian.net/browse/${sanitizeMarkdown(issue.key)}) ${sanitizeMarkdown(issue.fields.summary)} - ${assignee}`;
         })
             .join("\n\n");
         return projectSection + issuesList;

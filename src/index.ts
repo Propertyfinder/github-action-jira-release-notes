@@ -11,11 +11,11 @@ import * as _ from 'lodash'
     const order = core.getInput("order") || "DESC"
 
     const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`
-
+    const jiraQuery = `project IN (${projects}) AND labels IN (${version}) ORDER BY created ${order}`
     try {
-        const releaseData = await getIssues(baseUrl, projects, version, order, token);
-        const releaseUrl = getJiraVersionTitle(domain, projects, version);
-        const releaseNotes = convertToGitHubReleaseGroupedByProject(releaseData, version, releaseUrl);
+        const releaseData = await getIssues(baseUrl, jiraQuery, token);
+        const releaseUrl = getJiraVersionTitle(domain, projects, jiraQuery, version);
+        const releaseNotes = convertToGitHubReleaseGroupedByProject(domain, releaseData, releaseUrl);
         console.log("releaseNotes:", releaseNotes);
         core.setOutput("release_notes", `${releaseNotes}`);
     } catch (error: any) {
@@ -26,9 +26,7 @@ import * as _ from 'lodash'
 
 async function getIssues(
     baseUrl: string,
-    projects: string,
-    version: string,
-    order: string,
+    jiraQuery: string,
     token: string,
 ): Promise<IssuesData> {
     var options = {
@@ -39,7 +37,7 @@ async function getIssues(
                 },
             body: {
                   fields: ["id", "key", "summary", "components", "assignee", "project", "labels"],
-                  jql: `project IN (${projects}) AND labels IN (${version}) ORDER BY created ${order}`,
+                  jql: jiraQuery,
                   maxResults: 100
                 },
             json: true
@@ -50,16 +48,16 @@ async function getIssues(
     return response;
 }
 
-function getJiraVersionTitle(domain: string, projects: string, version: string): string {
+function getJiraVersionTitle(domain: string, projects: string, jiraQuery: string, version: string): string {
     const firstProject = projects.split(",")[0].trim()
     const url = `https://${domain}.atlassian.net/jira/software/c/projects/${firstProject}/issues`
-    const query = `project IN (${projects}) AND labels IN (${version})`
+    const query = jiraQuery
     const encodedQuery = encodeURIComponent(query);
 
     return `[Jira - ${version}](${url}?jql=${encodedQuery})`
 }
 
-function convertToGitHubReleaseGroupedByProject(data: IssuesData, version: string, jiraVersionTitle: string): string {
+function convertToGitHubReleaseGroupedByProject(domain: string, data: IssuesData, jiraVersionTitle: string): string {
     // Group issues by project name
     const issuesByProject: Record<string, Issue[]> = data.issues.reduce((group, issue) => {
         const projectName = issue.fields.project.name;
@@ -79,7 +77,7 @@ function convertToGitHubReleaseGroupedByProject(data: IssuesData, version: strin
                         ? sanitizeMarkdown(issue.fields.assignee.displayName)
                         : "Unassigned";
                     const components = sanitizeMarkdown(issue.fields.components.map(c => c.name).join(", "));
-                    return `[${sanitizeMarkdown(issue.key)}](https://pfinder.atlassian.net/browse/${sanitizeMarkdown(issue.key)}) ${sanitizeMarkdown(issue.fields.summary)} - ${assignee}`;
+                    return `[${sanitizeMarkdown(issue.key)}](https://${domain}.atlassian.net/browse/${sanitizeMarkdown(issue.key)}) ${sanitizeMarkdown(issue.fields.summary)} - ${assignee}`;
                 })
                 .join("\n\n");
             return projectSection + issuesList;
