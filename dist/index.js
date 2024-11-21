@@ -40,7 +40,7 @@ const request_promise_1 = __importDefault(__nccwpck_require__(8313));
     const projects = core.getInput("projects");
     const version = core.getInput("version");
     const token = core.getInput("auth-token");
-    const order = core.getInput("order");
+    const order = core.getInput("order") || "DESC";
     const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`;
     const jiraQuery = `project IN (${projects}) AND labels IN (${version}) ORDER BY created ${order}`;
     try {
