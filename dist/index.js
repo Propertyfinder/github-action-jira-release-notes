@@ -35,55 +35,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const request_promise_1 = __importDefault(__nccwpck_require__(8313));
-const jsonString = (/* unused pure expression or super */ null && (`
-{
-    "issues": [
-        {
-            "id": "149645",
-            "key": "NA-3797",
-            "fields": {
-                "summary": "Reduce Main Thread Load in the PLP if exist",
-                "project": {
-                    "name": "Native Apps"
-                },
-                "components": [
-                    {
-                        "name": "Android"
-                    }
-                ],
-                "assignee": null
-            }
-        },
-        {
-            "id": "149128",
-            "key": "NA-3775",
-            "fields": {
-                "summary": "Update new rega fields alignments",
-                "project": {
-                    "name": "Native Apps"
-                },
-                "components": [
-                    {
-                        "name": "Android"
-                    },
-                    {
-                        "name": "Squad: Search Experience"
-                    }
-                ],
-                "assignee": {
-                    "displayName": "Murat Varol"
-                }
-            }
-        }
-    ]
-}`));
 (async () => {
-    const domain = core.getInput("domain") || "pfinder";
-    const projects = core.getInput("projects") || "NA, CX, GROW, NP";
-    const version = core.getInput("version") || "Android";
+    const domain = core.getInput("domain");
+    const projects = core.getInput("projects");
+    const version = core.getInput("version");
     const token = core.getInput("auth-token");
     const order = core.getInput("order") || "DESC";
-    const baseUrl = `https://pfinder.atlassian.net/rest/api/3/search/jql`;
+    const baseUrl = `https://${domain}.atlassian.net/rest/api/3/search/jql`;
     try {
         const releaseData = await getIssues(baseUrl, projects, version, order, token);
         const releaseUrl = getJiraVersionTitle(domain, projects, version);
@@ -103,8 +61,8 @@ async function getIssues(baseUrl, projects, version, order, token) {
             Authorization: `Basic ${token}`
         },
         body: {
-            fields: ["id", "key", "summary", "components", "assignee", "project"],
-            jql: `project IN (${projects}) AND component = ${version} ORDER BY created ${order}`,
+            fields: ["id", "key", "summary", "components", "assignee", "project", "labels"],
+            jql: `project IN (${projects}) AND labels IN (${version}) ORDER BY created ${order}`,
             maxResults: 100
         },
         json: true
@@ -117,11 +75,9 @@ async function getIssues(baseUrl, projects, version, order, token) {
 function getJiraVersionTitle(domain, projects, version) {
     const firstProject = projects.split(",")[0].trim();
     const url = `https://${domain}.atlassian.net/jira/software/c/projects/${firstProject}/issues`;
-    const query = `project IN (${projects}) AND component = ${version}`;
+    const query = `project IN (${projects}) AND labels IN (${version})`;
     const encodedQuery = encodeURIComponent(query);
-    // working - do not touch
-    // [Jira - PF Android](https://pfinder.atlassian.net/jira/software/c/projects/NA/issues?jql=project%20IN%20(NA%2C%20CX%2C%20GROW%2C%20NP)%20AND%20component%20%3D%20Android)
-    return `[Jira - PF ${version}](${url}?jql=${encodedQuery})`;
+    return `[Jira - ${version}](${url}?jql=${encodedQuery})`;
 }
 function convertToGitHubReleaseGroupedByProject(data, version, jiraVersionTitle) {
     // Group issues by project name
@@ -152,12 +108,6 @@ function convertToGitHubReleaseGroupedByProject(data, version, jiraVersionTitle)
 }
 function sanitizeMarkdown(input) {
     return input.replace(/'/g, "&#39;").replace(/([\[\]\(\)_*`~])/g, "\\$1");
-}
-class GroupedIssue {
-    constructor(type, issues) {
-        this.type = type;
-        this.issues = issues;
-    }
 }
 
 
